@@ -8,7 +8,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -23,7 +23,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       setupViews()
+        setupViews()
         fatchUsers()
     }
     
@@ -43,25 +43,30 @@ class ViewController: UIViewController {
             emailLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 4)
         ])
     }
-
+    
     private func fatchUsers() {
+        
         APIManager.shared.fetchUser { result in
+            //협업시 이런식으로 작성하면 안됌
             switch result {
             case .success(let user):
-                let imageData = try! NSData(contentsOf: .init(string: user.avatar)!) as Data
+                let imageData = try! NSData(contentsOf: .init(string: user.avatar)!) as Data//예제용임 SDWebImage같은걸 써주는게 보통
                 self.imageView.image = UIImage(data: imageData)
                 self.emailLabel.text = user.email
             case .failure:
-                self.imageView.image = UIImage(systemName: "person.fill.questionmark")!
+                let imageUrlString = "https://cdn1.iconfinder.com/data/icons/user-fill-icons-set/144/User003_Error-512.png"
+                let imageData = try! NSData(contentsOf: .init(string: imageUrlString)!) as Data//예제용임 SDWebImage같은걸 써주는게 보통
+                self.imageView.image = UIImage(data: imageData)
                 self.emailLabel.text = "No user found🤪"
             }
             
         }
     }
-
+    
 }
 
 class APIManager {
+    
     static let shared = APIManager()
     private init() {}
     
