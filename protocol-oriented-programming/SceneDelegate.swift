@@ -18,7 +18,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let scene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: scene)
-        window?.rootViewController = ViewController()
+        let userService: UserService = APIManager()
+        //[X]let userService: APIManager = APIManager()
+        //프로토콜(UserService)를 넣어줄것임 why? 프로토콜은 컨트랙트 페이퍼같은것임 "어떤클래스가 들어와도" 프로토콜 함수가 컨펌되는
+        let viewModel = UserViewModel(userService: userService)//init해준 VM을 pass해줘야함
+        window?.rootViewController = ViewController(viewModel: viewModel)
         window?.makeKeyAndVisible()
     }
 
