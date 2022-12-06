@@ -6,28 +6,65 @@
 //
 
 import XCTest
-@testable import protocol_oriented_programming
+@testable import protocol_oriented_programming//뜻: 이파일의 타겟은 다른파일이다
 
 class protocol_oriented_programmingTests: XCTestCase {
-
+    
+    private var sut: UserViewModel!
+    private var userService: MockUserService!
+    private var output: MockUserViewOutput!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        output = MockUserViewOutput()
+        userService = MockUserService()
+        sut = UserViewModel(userService: userService)
+        sut.output = output
+        try super.setUpWithError()
     }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    
+    override func tearDownWithError() throws {//초기화
+        sut = nil
+        userService = nil
+        try super.tearDownWithError()
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    
+    func testUpdateView_onAPISuccess_showsImageAndEmail() {
+        //given
+        let user = User(id: 1, email: "me@gmail.com", avatar: "https://www.hi.com/2")
+        userService.fetchUserMockResult = .success(user)
+        //when
+        sut.fetchUser()
+        //then
+        XCTAssertEqual(output.updateViewArray.count, 1)
+        XCTAssertEqual(output.updateViewArray[0].email, "me@gmail.com")
+        XCTAssertEqual(output.updateViewArray[0].imageUrl, "https://www.hi.com/2")
     }
+    
+    func testUpdateView_onAPIFailure_showsErrorImageAndDefaultNoUserFoundText() {
+        //given
+        userService.fetchUserMockResult = .failure(NSError())
+        //when
+        sut.fetchUser()
+        //then
+        XCTAssertEqual(output.updateViewArray.count, 1)
+        XCTAssertEqual(output.updateViewArray[0].email, "No user found")
+      //  XCTAssertEqual(output.updateViewArray[0].imageUrl, "")
+    }
+    
+}
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+class MockUserService: UserService {
+    var fetchUserMockResult: Result<User, Error>?
+    func fetchUser(completion: @escaping (Result<User, Error>) -> Void) {
+        if let result = fetchUserMockResult {
+            completion(result)
         }
     }
+}
 
+class MockUserViewOutput: UserViewModelOutput {
+    var updateViewArray: [(imageUrl: String, email: String)] = []
+    func updateView(imageUrl: String, email: String) {
+        updateViewArray.append((imageUrl, email))
+    }
 }
